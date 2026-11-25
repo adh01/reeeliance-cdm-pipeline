@@ -16,7 +16,25 @@ Output:
 - `cdm_lakehouse/Contact/Contact.csv`
 - `cdm_lakehouse/SalesOrder/SalesOrder.csv`
 - `cdm_lakehouse/model.json`
+- `cdm_lakehouse/_rejected/SalesOrder_rejected.csv` (quarantine: rejected records with the reason)
 - `pipeline.log` (all warnings, e.g. invalid emails and orphan orders)
+
+### Run the tests
+
+```bash
+pip install -r requirements-dev.txt
+python3 -m pytest -v
+```
+
+The tests also run automatically on every push with GitHub Actions (`.github/workflows/ci.yml`):
+unit tests, a full pipeline run and a check that all outputs exist.
+
+### Run with Docker
+
+```bash
+docker build -t cdm-pipeline .
+docker run --rm -v "$(pwd)/cdm_lakehouse:/app/cdm_lakehouse" cdm-pipeline
+```
 
 ## Project structure
 
@@ -28,6 +46,9 @@ Output:
 | `src/transform.py` | Maps raw rows to `Contact` and `SalesOrder`, checks the foreign key |
 | `src/load.py` | Writes each entity into `cdm_lakehouse/<Entity>/<Entity>.csv` |
 | `src/manifest.py` | Holds the target schema once and generates `model.json` from it |
+| `tests/` | Unit tests for the cleaning functions, the row repair and the foreign key check |
+| `.github/workflows/ci.yml` | Runs the tests and the pipeline on every push |
+| `Dockerfile` | Runs the pipeline in a container |
 
 ## Data quality decisions
 
@@ -39,7 +60,7 @@ Output:
 | Three different date formats | All normalized to `YYYY-MM-DDTHH:MM:SSZ`, assumed UTC; date-only becomes `00:00:00` |
 | `ACTIVE` in uppercase | Status mapping is case-insensitive |
 | Leading space in ` Charlie Brown` | Trimmed before splitting the name |
-| Order `ORD-1005` points to `CST-999` | Orphan: logged and not loaded, so every `customerid` matches a `contactid` |
+| Order `ORD-1005` points to `CST-999` | Orphan: logged and moved to quarantine (`_rejected/`), so every loaded `customerid` matches a `contactid` and no data is lost |
 
 The schema is defined once in `manifest.py`. The CSV columns and `model.json`
 are both generated from it, so they can never drift apart.
@@ -66,6 +87,7 @@ flowchart LR
         MJ["model.json<br/>entities, attributes,<br/>partitions, relationship"]
         CC["Contact/Contact.csv"]
         SC["SalesOrder/SalesOrder.csv"]
+        RJ["_rejected/SalesOrder_rejected.csv<br/>quarantine with reason"]
     end
 
     LOG["pipeline.log<br/>invalid emails, orphans"]
@@ -75,6 +97,7 @@ flowchart LR
     E --> T --> L
     L --> CC
     L --> SC
+    L --> RJ
     M --> MJ
     MJ -. "partition location" .-> CC
     MJ -. "partition location" .-> SC
@@ -109,6 +132,6 @@ Each `SalesOrder` belongs to exactly one `Contact`.
 
 - Run it in an orchestrator (e.g. Airflow or Azure Data Factory) instead of by hand
 - Write to cloud storage (e.g. ADLS Gen2) instead of a local folder
-- Keep orphan records in a quarantine folder so they can be fixed and reloaded
-- Unit tests for each cleaning function
+- Reprocess quarantined records automatically once the missing customer arrives
 - Partition large entities by date (e.g. `SalesOrder/2023/06/...`)
+- Use pandas or PySpark for large data volumes

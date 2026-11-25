@@ -1,0 +1,46 @@
+from extract import read_csv
+from transform import to_contacts, to_sales_orders
+
+
+def test_read_csv_repairs_row_split_over_two_lines(tmp_path):
+    raw = tmp_path / "customers.csv"
+    raw.write_text(
+        "cust_id,full_name,email_addr,signup_date,user_status\n"
+        "CST-005, Charlie Brown\n"
+        ",charlie@peanuts.com,2023-05-01T12:00:00Z,inactive\n"
+    )
+    rows = read_csv(raw)
+    assert len(rows) == 1
+    assert rows[0]["cust_id"] == "CST-005"
+    assert rows[0]["email_addr"] == "charlie@peanuts.com"
+
+
+def test_contact_mapping():
+    raw = [{"cust_id": "CST-002", "full_name": "John Smith", "email_addr": "JOHN.SMITH@DOMAIN.COM",
+            "signup_date": "2023-02-20 14:15:00", "user_status": "active"}]
+    contacts, rejected = to_contacts(raw)
+    assert rejected == []
+    assert contacts[0] == {
+        "contactid": "CST-002", "firstname": "John", "lastname": "Smith",
+        "emailaddress1": "john.smith@domain.com", "createdon": "2023-02-20T14:15:00Z", "statecode": 0,
+    }
+
+
+def test_orphan_order_goes_to_quarantine():
+    contacts = [{"contactid": "CST-001"}]
+    raw_orders = [
+        {"tx_id": "ORD-1001", "customer_id": "CST-001", "amount_usd": "250.50", "tx_timestamp": "2023-06-01T09:15:00Z"},
+        {"tx_id": "ORD-1005", "customer_id": "CST-999", "amount_usd": "99.00", "tx_timestamp": "2023-06-06T10:00:00Z"},
+    ]
+    orders, rejected = to_sales_orders(raw_orders, contacts)
+    assert [o["salesorderid"] for o in orders] == ["ORD-1001"]
+    assert rejected[0]["tx_id"] == "ORD-1005"
+    assert "orphan" in rejected[0]["reject_reason"]
+
+
+def test_every_loaded_order_has_a_valid_customer():
+    contacts = [{"contactid": "A"}, {"contactid": "B"}]
+    raw_orders = [{"tx_id": str(i), "customer_id": c, "amount_usd": "1", "tx_timestamp": "2023-01-01"}
+                  for i, c in enumerate(["A", "B", "X", "A"])]
+    orders, _ = to_sales_orders(raw_orders, contacts)
+    assert all(o["customerid"] in {"A", "B"} for o in orders)

@@ -20,3 +20,20 @@ def write_entity(records, columns, lakehouse_dir, entity_name):
 
     log.info("Wrote %d rows to %s", len(records), path)
     return f"{entity_name}/{entity_name}.csv"
+
+
+def write_rejected(records, lakehouse_dir, entity_name):
+    """Write rejected raw records with their reason to <lakehouse>/_rejected/<Entity>_rejected.csv."""
+    if not records:
+        return None
+    folder = Path(lakehouse_dir) / "_rejected"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"{entity_name}_rejected.csv"
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(records[0].keys()))
+        writer.writeheader()
+        writer.writerows(records)
+
+    log.warning("Wrote %d rejected rows to %s", len(records), path)
+    return path

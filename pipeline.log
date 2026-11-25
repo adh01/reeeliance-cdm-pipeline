@@ -1,10 +1,11 @@
-2026-11-25 14:12:55,530 WARNING extract: Repaired a row that was split over two lines: CST-005
-2026-11-25 14:12:55,530 INFO extract: Read 5 rows from data/raw/raw_customers.csv
-2026-11-25 14:12:55,531 INFO extract: Read 5 rows from data/raw/raw_orders.csv
-2026-11-25 14:12:55,536 WARNING transform: Invalid email for CST-003: 'invalid-email-format' -> set to empty
-2026-11-25 14:12:55,536 INFO transform: Transformed 5 contacts
-2026-11-25 14:12:55,537 WARNING transform: Orphan order ORD-1005: customer CST-999 does not exist -> skipped
-2026-11-25 14:12:55,537 INFO transform: Transformed 4 sales orders
-2026-11-25 14:12:55,537 INFO load: Wrote 5 rows to cdm_lakehouse/Contact/Contact.csv
-2026-11-25 14:12:55,537 INFO load: Wrote 4 rows to cdm_lakehouse/SalesOrder/SalesOrder.csv
-2026-11-25 14:12:55,537 INFO manifest: Wrote manifest to cdm_lakehouse/model.json
+2026-11-25 14:21:18,163 WARNING extract: Repaired a row that was split over two lines: CST-005
+2026-11-25 14:21:18,163 INFO extract: Read 5 rows from data/raw/raw_customers.csv
+2026-11-25 14:21:18,164 INFO extract: Read 5 rows from data/raw/raw_orders.csv
+2026-11-25 14:21:18,167 WARNING transform: Invalid email for CST-003: 'invalid-email-format' -> set to empty
+2026-11-25 14:21:18,167 INFO transform: Transformed 5 contacts, 0 rejected
+2026-11-25 14:21:18,167 WARNING transform: Orphan order ORD-1005: customer CST-999 does not exist -> quarantine
+2026-11-25 14:21:18,167 INFO transform: Transformed 4 sales orders, 1 rejected
+2026-11-25 14:21:18,168 INFO load: Wrote 5 rows to cdm_lakehouse/Contact/Contact.csv
+2026-11-25 14:21:18,168 INFO load: Wrote 4 rows to cdm_lakehouse/SalesOrder/SalesOrder.csv
+2026-11-25 14:21:18,169 WARNING load: Wrote 1 rejected rows to cdm_lakehouse/_rejected/SalesOrder_rejected.csv
+2026-11-25 14:21:18,169 INFO manifest: Wrote manifest to cdm_lakehouse/model.json

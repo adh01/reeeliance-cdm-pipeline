@@ -1,0 +1,6 @@
+.git
+.github
+__pycache__/
+cdm_lakehouse/
+pipeline.log
+tests/
