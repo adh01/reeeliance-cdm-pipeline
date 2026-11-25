@@ -65,9 +65,11 @@ docker run --rm -v "$(pwd)/cdm_lakehouse:/app/cdm_lakehouse" cdm-pipeline
 | `CST-005` is split over two lines | Detected (too few fields) and glued back together, logged |
 | `invalid-email-format` (CST-003) | Logged, `emailaddress1` left empty |
 | Uppercase email (CST-002) | Lowercased |
-| Three different date formats | All normalized to `YYYY-MM-DDTHH:MM:SSZ`, assumed UTC; date-only becomes `00:00:00` |
+| Three different date formats | All normalized to `YYYY-MM-DDTHH:MM:SSZ`; offsets like `+01:00` are converted to UTC, values without a time zone are treated as UTC, date-only becomes `00:00:00` |
 | `ACTIVE` in uppercase | Status mapping is case-insensitive |
 | Leading space in ` Charlie Brown` | Trimmed before splitting the name |
+| Row with too many fields, e.g. an unquoted comma in `1,200.00` (checked, none in sample) | Cannot be mapped safely: moved to quarantine as raw row |
+| Amount `NaN` or `Infinity` (checked, none in sample) | Treated as invalid amount, moved to quarantine |
 | Duplicate `contactid` or `salesorderid` (checked, none in sample) | First one is loaded, every further copy goes to quarantine as `duplicate id` |
 | Invalid amount or order timestamp (checked, none in sample) | Moved to quarantine with the reason |
 | Order `ORD-1005` points to `CST-999` | Orphan: logged and moved to quarantine (`_rejected/`), so every loaded `customerid` matches a `contactid` and no data is lost |

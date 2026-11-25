@@ -9,7 +9,8 @@ def test_read_csv_repairs_row_split_over_two_lines(tmp_path):
         "CST-005, Charlie Brown\n"
         ",charlie@peanuts.com,2023-05-01T12:00:00Z,inactive\n"
     )
-    rows = read_csv(raw)
+    rows, malformed = read_csv(raw)
+    assert malformed == []
     assert len(rows) == 1
     assert rows[0]["cust_id"] == "CST-005"
     assert rows[0]["email_addr"] == "charlie@peanuts.com"
@@ -65,3 +66,15 @@ def test_duplicate_and_invalid_orders_go_to_quarantine():
     orders, rejected = to_sales_orders(raw_orders, contacts)
     assert [o["salesorderid"] for o in orders] == ["ORD-1"]
     assert [r["reject_reason"] for r in rejected] == ["duplicate id", "invalid timestamp"]
+
+
+def test_row_with_too_many_fields_goes_to_quarantine(tmp_path):
+    raw = tmp_path / "orders.csv"
+    raw.write_text(
+        "tx_id,customer_id,amount_usd,tx_timestamp\n"
+        "ORD-1,CST-001,1,200.00,2023-06-01T09:15:00Z\n"
+        "ORD-2,CST-001,10.00,2023-06-01T09:15:00Z\n"
+    )
+    rows, malformed = read_csv(raw)
+    assert [r["tx_id"] for r in rows] == ["ORD-2"]
+    assert malformed[0]["reject_reason"] == "wrong number of fields"

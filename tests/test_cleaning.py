@@ -26,6 +26,10 @@ def test_to_iso8601_handles_all_three_formats():
     assert to_iso8601("2023-03-05") == "2023-03-05T00:00:00Z"
 
 
+def test_to_iso8601_converts_offsets_to_utc():
+    assert to_iso8601("2023-06-01T10:15:00+01:00") == "2023-06-01T09:15:00Z"
+
+
 def test_to_iso8601_unknown_format_returns_none():
     assert to_iso8601("05.03.2023") is None
 
@@ -40,3 +44,4 @@ def test_to_statecode_is_case_insensitive():
 def test_to_decimal():
     assert to_decimal("250.50") == Decimal("250.50")
     assert to_decimal("abc") is None
+    assert to_decimal("NaN") is None

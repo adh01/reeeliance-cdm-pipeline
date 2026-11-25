@@ -5,8 +5,9 @@ from decimal import Decimal, InvalidOperation
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$")
 
-# Date formats we expect in the raw files (all treated as UTC).
-DATE_FORMATS = ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+# Date formats we expect in the raw files. %z reads "Z" and offsets like "+01:00".
+# Values without a time zone are treated as UTC.
+DATE_FORMATS = ["%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
 
 STATUS_CODES = {"active": 0, "inactive": 1}
 
@@ -32,10 +33,12 @@ def to_iso8601(value):
     value = value.strip()
     for fmt in DATE_FORMATS:
         try:
-            parsed = datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
-            return parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+            parsed = datetime.strptime(value, fmt)
         except ValueError:
             continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return None
 
 
@@ -45,8 +48,9 @@ def to_statecode(status):
 
 
 def to_decimal(amount):
-    """'250.50' -> Decimal('250.50'). Return None if it is not a number."""
+    """'250.50' -> Decimal('250.50'). Return None if it is not a real number (also 'NaN', 'Infinity')."""
     try:
-        return Decimal(amount.strip())
+        value = Decimal(amount.strip())
     except InvalidOperation:
         return None
+    return value if value.is_finite() else None

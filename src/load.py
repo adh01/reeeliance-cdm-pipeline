@@ -31,7 +31,9 @@ def write_rejected(records, lakehouse_dir, entity_name):
     path = folder / f"{entity_name}_rejected.csv"
 
     with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(records[0].keys()))
+        # Malformed rows have other keys than mapped rows, so collect all keys in order.
+        fieldnames = list(dict.fromkeys(key for record in records for key in record))
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(records)
 

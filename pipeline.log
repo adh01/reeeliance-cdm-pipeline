@@ -1,14 +1,14 @@
-2026-11-25 14:29:03,900 WARNING extract: Repaired a row that was split over two lines: CST-005
-2026-11-25 14:29:03,900 INFO extract: Read 5 rows from data/raw/raw_customers.csv
-2026-11-25 14:29:03,900 INFO extract: Read 5 rows from data/raw/raw_orders.csv
-2026-11-25 14:29:03,905 WARNING transform: Invalid email for CST-003: 'invalid-email-format' -> set to empty
-2026-11-25 14:29:03,906 INFO transform: Transformed 5 contacts, 0 rejected
-2026-11-25 14:29:03,906 WARNING transform: ORD-1005: orphan: customer CST-999 not found -> quarantine
-2026-11-25 14:29:03,906 INFO transform: Transformed 4 sales orders, 1 rejected
-2026-11-25 14:29:03,907 INFO load: Wrote 5 rows to cdm_lakehouse/Contact/Contact.csv
-2026-11-25 14:29:03,907 INFO load: Wrote 4 rows to cdm_lakehouse/SalesOrder/SalesOrder.csv
-2026-11-25 14:29:03,908 WARNING load: Wrote 1 rejected rows to cdm_lakehouse/_rejected/SalesOrder_rejected.csv
-2026-11-25 14:29:03,908 INFO manifest: Wrote manifest to cdm_lakehouse/model.json
-2026-11-25 14:29:03,908 INFO summary: Contact:    5 read, 5 loaded, 0 quarantined, 1 invalid emails cleared
-2026-11-25 14:29:03,908 INFO summary: SalesOrder: 5 read, 4 loaded, 1 quarantined
-2026-11-25 14:29:03,908 INFO summary: Finished in 0.01 s
+2026-11-25 14:30:29,846 WARNING extract: Repaired a row that was split over two lines: CST-005
+2026-11-25 14:30:29,846 INFO extract: Read 5 rows from data/raw/raw_customers.csv (0 malformed)
+2026-11-25 14:30:29,846 INFO extract: Read 5 rows from data/raw/raw_orders.csv (0 malformed)
+2026-11-25 14:30:29,850 WARNING transform: Invalid email for CST-003: 'invalid-email-format' -> set to empty
+2026-11-25 14:30:29,850 INFO transform: Transformed 5 contacts, 0 rejected
+2026-11-25 14:30:29,851 WARNING transform: ORD-1005: orphan: customer CST-999 not found -> quarantine
+2026-11-25 14:30:29,851 INFO transform: Transformed 4 sales orders, 1 rejected
+2026-11-25 14:30:29,851 INFO load: Wrote 5 rows to cdm_lakehouse/Contact/Contact.csv
+2026-11-25 14:30:29,852 INFO load: Wrote 4 rows to cdm_lakehouse/SalesOrder/SalesOrder.csv
+2026-11-25 14:30:29,852 WARNING load: Wrote 1 rejected rows to cdm_lakehouse/_rejected/SalesOrder_rejected.csv
+2026-11-25 14:30:29,853 INFO manifest: Wrote manifest to cdm_lakehouse/model.json
+2026-11-25 14:30:29,853 INFO summary: Contact:    5 read, 5 loaded, 0 quarantined, 1 invalid emails cleared
+2026-11-25 14:30:29,853 INFO summary: SalesOrder: 5 read, 4 loaded, 1 quarantined
+2026-11-25 14:30:29,853 INFO summary: Finished in 0.01 s

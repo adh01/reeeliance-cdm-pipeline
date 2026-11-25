@@ -29,12 +29,14 @@ def main():
     )
 
     # 1. Extract
-    raw_customers = read_csv(RAW_DIR / "raw_customers.csv")
-    raw_orders = read_csv(RAW_DIR / "raw_orders.csv")
+    raw_customers, malformed_customers = read_csv(RAW_DIR / "raw_customers.csv")
+    raw_orders, malformed_orders = read_csv(RAW_DIR / "raw_orders.csv")
 
     # 2. Transform
     contacts, rejected_contacts = to_contacts(raw_customers)
     orders, rejected_orders = to_sales_orders(raw_orders, contacts)
+    rejected_contacts += malformed_customers
+    rejected_orders += malformed_orders
 
     # 3. Load
     locations = {
