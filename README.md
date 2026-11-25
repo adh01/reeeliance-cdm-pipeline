@@ -30,6 +30,8 @@ summary: Finished in 0.01 s
 ### Run the tests
 
 ```bash
+python3 -m venv .venv          # once, keeps pytest out of the system Python
+source .venv/bin/activate
 pip install -r requirements-dev.txt
 python3 -m pytest -v
 ```
