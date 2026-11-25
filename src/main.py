@@ -1,6 +1,7 @@
 """Run the whole pipeline: extract -> transform -> load -> manifest."""
 import logging
 import os
+import time
 from pathlib import Path
 
 from extract import read_csv
@@ -15,6 +16,7 @@ LOG_FILE = Path("pipeline.log")
 
 
 def main():
+    start = time.perf_counter()
     os.chdir(ROOT)  # all paths are relative to the project folder
     if (LAKEHOUSE_DIR / "_rejected").exists():
         for old in (LAKEHOUSE_DIR / "_rejected").glob("*.csv"):
@@ -46,6 +48,15 @@ def main():
 
     # 4. Manifest
     write_manifest(build_manifest(locations), LAKEHOUSE_DIR)
+
+    # Run summary: one line per entity, so a run can be checked at a glance
+    log = logging.getLogger("summary")
+    emails_cleared = sum(1 for c in contacts if c["emailaddress1"] is None)
+    log.info("Contact:    %d read, %d loaded, %d quarantined, %d invalid emails cleared",
+             len(raw_customers), len(contacts), len(rejected_contacts), emails_cleared)
+    log.info("SalesOrder: %d read, %d loaded, %d quarantined",
+             len(raw_orders), len(orders), len(rejected_orders))
+    log.info("Finished in %.2f s", time.perf_counter() - start)
 
 
 if __name__ == "__main__":

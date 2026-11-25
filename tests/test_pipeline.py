@@ -44,3 +44,24 @@ def test_every_loaded_order_has_a_valid_customer():
                   for i, c in enumerate(["A", "B", "X", "A"])]
     orders, _ = to_sales_orders(raw_orders, contacts)
     assert all(o["customerid"] in {"A", "B"} for o in orders)
+
+
+def test_duplicate_contact_id_goes_to_quarantine():
+    row = {"cust_id": "CST-001", "full_name": "Jane Doe", "email_addr": "jane@example.com",
+           "signup_date": "2023-01-15", "user_status": "active"}
+    contacts, rejected = to_contacts([row, dict(row)])
+    assert len(contacts) == 1
+    assert rejected[0]["reject_reason"] == "duplicate id"
+
+
+def test_duplicate_and_invalid_orders_go_to_quarantine():
+    contacts = [{"contactid": "CST-001"}]
+    base = {"customer_id": "CST-001", "amount_usd": "10.00", "tx_timestamp": "2023-06-01T09:15:00Z"}
+    raw_orders = [
+        {"tx_id": "ORD-1", **base},
+        {"tx_id": "ORD-1", **base},                                     # duplicate
+        {"tx_id": "ORD-2", **base, "tx_timestamp": "not a date"},       # invalid timestamp
+    ]
+    orders, rejected = to_sales_orders(raw_orders, contacts)
+    assert [o["salesorderid"] for o in orders] == ["ORD-1"]
+    assert [r["reject_reason"] for r in rejected] == ["duplicate id", "invalid timestamp"]

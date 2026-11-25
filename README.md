@@ -19,6 +19,14 @@ Output:
 - `cdm_lakehouse/_rejected/SalesOrder_rejected.csv` (quarantine: rejected records with the reason)
 - `pipeline.log` (all warnings, e.g. invalid emails and orphan orders)
 
+Every run ends with a short summary in the log:
+
+```
+summary: Contact:    5 read, 5 loaded, 0 quarantined, 1 invalid emails cleared
+summary: SalesOrder: 5 read, 4 loaded, 1 quarantined
+summary: Finished in 0.01 s
+```
+
 ### Run the tests
 
 ```bash
@@ -60,6 +68,8 @@ docker run --rm -v "$(pwd)/cdm_lakehouse:/app/cdm_lakehouse" cdm-pipeline
 | Three different date formats | All normalized to `YYYY-MM-DDTHH:MM:SSZ`, assumed UTC; date-only becomes `00:00:00` |
 | `ACTIVE` in uppercase | Status mapping is case-insensitive |
 | Leading space in ` Charlie Brown` | Trimmed before splitting the name |
+| Duplicate `contactid` or `salesorderid` (checked, none in sample) | First one is loaded, every further copy goes to quarantine as `duplicate id` |
+| Invalid amount or order timestamp (checked, none in sample) | Moved to quarantine with the reason |
 | Order `ORD-1005` points to `CST-999` | Orphan: logged and moved to quarantine (`_rejected/`), so every loaded `customerid` matches a `contactid` and no data is lost |
 
 The schema is defined once in `manifest.py`. The CSV columns and `model.json`
